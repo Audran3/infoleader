@@ -12,7 +12,7 @@ aucun framework. Seule dépendance : **PHPMailer** (envoi des e-mails par un ser
 |------|---------|---------|
 | Accueil | `index.php` | Bannière, slogan, bouton « Découvrir nos produits », présentation, points forts |
 | Nos Produits | `products.php` | 6 produits lus dans `products.json`, grille responsive, filtre de recherche en temps réel |
-| Contact | `contact.php` | Formulaire nom / e-mail / message, validation JavaScript + PHP, message enregistré pour le panel |
+| Contact | `contact.php` | Formulaire nom / e-mail / message, validation JavaScript + PHP, CAPTCHA (calcul en image), message enregistré pour le panel et envoyé par e-mail à l'équipe |
 
 ## Panneau d'administration (`/admin/`)
 

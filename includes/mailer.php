@@ -19,27 +19,65 @@ function phpMailerInstalle(): bool
 }
 
 // Envoie un e-mail texte au destinataire configuré. Renvoie ['ok' => bool, 'erreur' => ?string]
-function envoyerMail(string $sujet, string $texte): array
+// $repondreA (facultatif) : adresse utilisée quand le destinataire clique sur « Répondre »
+// (formulaire de contact : l'adresse du visiteur).
+function envoyerMail(string $sujet, string $texte, ?string $repondreA = null, string $nomRepondreA = ''): array
 {
     $cfg = configMail();
+    if ($repondreA !== null && !filter_var($repondreA, FILTER_VALIDATE_EMAIL)) {
+        $repondreA = null;  // adresse invalide : ignorée (filter_var écarte aussi les retours à la ligne)
+    }
+    $nomRepondreA = str_replace(["\r", "\n"], ' ', $nomRepondreA);
 
     if (!filter_var($cfg['destinataire'], FILTER_VALIDATE_EMAIL)) {
         $resultat = ['ok' => false, 'erreur' => 'aucun destinataire valide n\'est configuré (module « Configuration des e-mails »).'];
     } elseif (!filter_var($cfg['expediteur_email'], FILTER_VALIDATE_EMAIL)) {
         $resultat = ['ok' => false, 'erreur' => 'aucune adresse d\'expéditeur valide n\'est configurée (module « Configuration des e-mails »).'];
     } elseif ($cfg['mode'] === 'smtp') {
-        $resultat = envoyerViaSmtp($cfg, $sujet, $texte);
+        $resultat = envoyerViaSmtp($cfg, $sujet, $texte, $repondreA, $nomRepondreA);
     } else {
-        $resultat = envoyerViaPhpMail($cfg, $sujet, $texte);
+        $resultat = envoyerViaPhpMail($cfg, $sujet, $texte, $repondreA);
     }
 
     if ($cfg['logs_debogage']) {
-        journaliserMail($cfg, $sujet, $texte, $resultat);
+        journaliserMail($cfg, $sujet, $texte, $resultat, $repondreA);
     }
     return $resultat;
 }
 
-function envoyerViaSmtp(array $cfg, string $sujet, string $texte): array
+function chargerPhpMailer(): void
+{
+    require_once DOSSIER_PHPMAILER . '/Exception.php';
+    require_once DOSSIER_PHPMAILER . '/PHPMailer.php';
+    require_once DOSSIER_PHPMAILER . '/SMTP.php';
+}
+
+// Prépare le message SMTP sans l'envoyer (séparé de l'envoi pour pouvoir le tester)
+function preparerMessageSmtp(array $cfg, string $sujet, string $texte, ?string $repondreA = null, string $nomRepondreA = ''): PHPMailer
+{
+    $mail = new PHPMailer(true);  // true : chaque erreur déclenche une exception
+    $mail->isSMTP();
+    $mail->Host     = $cfg['smtp_hote'];
+    $mail->Port     = (int) $cfg['smtp_port'];
+    $mail->SMTPAuth = true;
+    $mail->Username = $cfg['smtp_identifiant'];
+    $mail->Password = $cfg['smtp_mot_de_passe'];
+    // Port 587 : connexion puis passage en chiffré (STARTTLS) — port 465 : chiffré dès le départ (SSL)
+    $mail->SMTPSecure = $cfg['smtp_securite'] === 'ssl' ? PHPMailer::ENCRYPTION_SMTPS : PHPMailer::ENCRYPTION_STARTTLS;
+    $mail->Timeout  = 15;
+    $mail->CharSet  = PHPMailer::CHARSET_UTF8;
+
+    $mail->setFrom($cfg['expediteur_email'], $cfg['expediteur_nom']);
+    $mail->addAddress($cfg['destinataire']);
+    if ($repondreA !== null) {
+        $mail->addReplyTo($repondreA, $nomRepondreA);
+    }
+    $mail->Subject = $sujet;
+    $mail->Body    = $texte;
+    return $mail;
+}
+
+function envoyerViaSmtp(array $cfg, string $sujet, string $texte, ?string $repondreA = null, string $nomRepondreA = ''): array
 {
     if (!phpMailerInstalle()) {
         return ['ok' => false, 'erreur' => 'PHPMailer n\'est pas installé (dossier vendor/phpmailer/phpmailer/src).'];
@@ -47,43 +85,26 @@ function envoyerViaSmtp(array $cfg, string $sujet, string $texte): array
     if (!extension_loaded('openssl')) {
         return ['ok' => false, 'erreur' => 'l\'extension OpenSSL n\'est pas activée dans php.ini (obligatoire pour le chiffrement TLS/SSL).'];
     }
+    chargerPhpMailer();
 
-    require_once DOSSIER_PHPMAILER . '/Exception.php';
-    require_once DOSSIER_PHPMAILER . '/PHPMailer.php';
-    require_once DOSSIER_PHPMAILER . '/SMTP.php';
-
-    $mail = new PHPMailer(true);  // true : chaque erreur déclenche une exception
+    $mail = null;
     $dialogue = [];
-    if ($cfg['logs_debogage']) {
-        // Dialogue avec le serveur SMTP, recopié dans mail.log pour comprendre un échec
-        $mail->SMTPDebug = SMTP::DEBUG_CONNECTION;
-        $mail->Debugoutput = function ($ligne) use (&$dialogue) {
-            if (count($dialogue) < 300) {
-                $dialogue[] = rtrim($ligne);
-            }
-        };
-    }
     try {
-        $mail->isSMTP();
-        $mail->Host     = $cfg['smtp_hote'];
-        $mail->Port     = (int) $cfg['smtp_port'];
-        $mail->SMTPAuth = true;
-        $mail->Username = $cfg['smtp_identifiant'];
-        $mail->Password = $cfg['smtp_mot_de_passe'];
-        // Port 587 : connexion puis passage en chiffré (STARTTLS) — port 465 : chiffré dès le départ (SSL)
-        $mail->SMTPSecure = $cfg['smtp_securite'] === 'ssl' ? PHPMailer::ENCRYPTION_SMTPS : PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Timeout  = 15;
-        $mail->CharSet  = PHPMailer::CHARSET_UTF8;
-
-        $mail->setFrom($cfg['expediteur_email'], $cfg['expediteur_nom']);
-        $mail->addAddress($cfg['destinataire']);
-        $mail->Subject = $sujet;
-        $mail->Body    = $texte;
-
+        $mail = preparerMessageSmtp($cfg, $sujet, $texte, $repondreA, $nomRepondreA);
+        if ($cfg['logs_debogage']) {
+            // Dialogue avec le serveur SMTP, recopié dans mail.log pour comprendre un échec
+            $mail->SMTPDebug = SMTP::DEBUG_CONNECTION;
+            $mail->Debugoutput = function ($ligne) use (&$dialogue) {
+                if (count($dialogue) < 300) {
+                    $dialogue[] = rtrim($ligne);
+                }
+            };
+        }
         $mail->send();
         return ['ok' => true, 'erreur' => null, 'dialogue' => masquerAuthentification($dialogue)];
     } catch (ExceptionPHPMailer $exception) {
-        return ['ok' => false, 'erreur' => $mail->ErrorInfo ?: $exception->getMessage(), 'dialogue' => masquerAuthentification($dialogue)];
+        $erreur = ($mail && $mail->ErrorInfo) ? $mail->ErrorInfo : $exception->getMessage();
+        return ['ok' => false, 'erreur' => $erreur, 'dialogue' => masquerAuthentification($dialogue)];
     }
 }
 
@@ -105,7 +126,7 @@ function masquerAuthentification(array $dialogue): array
     return $dialogue;
 }
 
-function envoyerViaPhpMail(array $cfg, string $sujet, string $texte): array
+function envoyerViaPhpMail(array $cfg, string $sujet, string $texte, ?string $repondreA = null): array
 {
     // Les retours à la ligne sont retirés du nom : ils permettraient d'injecter des en-têtes
     $nom = str_replace(["\r", "\n"], ' ', $cfg['expediteur_nom']);
@@ -114,6 +135,9 @@ function envoyerViaPhpMail(array $cfg, string $sujet, string $texte): array
         'MIME-Version' => '1.0',
         'Content-Type' => 'text/plain; charset=UTF-8',
     ];
+    if ($repondreA !== null) {
+        $entetes['Reply-To'] = $repondreA;  // déjà validée par filter_var dans envoyerMail()
+    }
     if (@mail($cfg['destinataire'], mb_encode_mimeheader($sujet, 'UTF-8'), $texte, $entetes)) {
         return ['ok' => true, 'erreur' => null];
     }
@@ -128,14 +152,15 @@ function envoyerViaPhpMail(array $cfg, string $sujet, string $texte): array
 }
 
 // Logs de débogage : chaque e-mail est consigné dans storage/logs/mail.log (jamais la clé SMTP)
-function journaliserMail(array $cfg, string $sujet, string $texte, array $resultat): void
+function journaliserMail(array $cfg, string $sujet, string $texte, array $resultat, ?string $repondreA = null): void
 {
     $entree = sprintf(
-        "[%s] mode=%s | de=%s | à=%s | sujet=%s\nRésultat : %s\n%s\n%s\n",
+        "[%s] mode=%s | de=%s | à=%s%s | sujet=%s\nRésultat : %s\n%s\n%s\n",
         maintenant(),
         $cfg['mode'],
         $cfg['expediteur_email'] ?: '(vide)',
         $cfg['destinataire'] ?: '(vide)',
+        $repondreA ? " | répondre à=$repondreA" : '',
         $sujet,
         $resultat['ok'] ? 'ENVOYÉ' : 'ÉCHEC — ' . $resultat['erreur'],
         $texte,
@@ -166,6 +191,19 @@ function notifierChangementSecurite(string $titre, string $description): array
     journaliser('evenement', 'Alerte de sécurité « ' . $titre . ' » '
         . ($envoi['ok'] ? 'envoyée par e-mail.' : 'non envoyée (' . $envoi['erreur'] . ').'));
     return $envoi;
+}
+
+// Contenu de l'e-mail envoyé à l'équipe pour chaque message du formulaire de contact
+function texteMailContact(string $nom, string $email, string $message): string
+{
+    return "Nouveau message reçu depuis le formulaire de contact du site InfoLeader.\n\n"
+        . "Nom : $nom\n"
+        . "E-mail : $email\n"
+        . 'Date : ' . date('d/m/Y') . ' à ' . date('H:i') . "\n"
+        . 'Adresse IP : ' . ipClient() . "\n\n"
+        . "Message :\n$message\n\n"
+        . "—\nPour répondre au visiteur, utilisez simplement « Répondre » : la réponse partira vers $email.\n"
+        . "Le message est aussi consultable dans le panel : Maintenance > Journaux > Messages de contact.";
 }
 
 // Contenu de l'e-mail « mot de passe oublié »

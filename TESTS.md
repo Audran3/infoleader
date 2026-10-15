@@ -29,6 +29,10 @@ Notez le résultat de chaque test (OK / KO + date). Un test KO doit être corrig
 | T09 | F12 > Réseau > cliquer sur la page > En-têtes de réponse | `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: same-origin` | OK — 15/10/2026 |
 | T10 | Ouvrir `/infoleader/config/admin.json`, `/infoleader/includes/bootstrap.php`, `/infoleader/.htaccess` | Erreur 403 (Forbidden) à chaque fois | OK — 15/10/2026 |
 | T37 | Provoquer une erreur PHP (variable inexistante dans une page de test) | Aucun détail technique à l'écran ; l'erreur est dans `C:\wamp64\logs\php_error.log` | OK — 15/10/2026 |
+| T39 | Contact : remplir le formulaire avec un mauvais résultat de calcul | « Le résultat du calcul est incorrect… », le texte saisi est conservé, une nouvelle image est proposée, rien n'est enregistré | OK — 15/10/2026 |
+| T40 | Contact : bon résultat de calcul | Message enregistré ; un e-mail « Nouveau message de contact de … » part vers la boîte configurée (voir E04) | OK — 15/10/2026 (sans envoi réel) |
+| T41 | Contact : renvoyer le formulaire avec la même réponse | Refusé : chaque calcul ne sert qu'une fois | OK — 15/10/2026 |
+| T42 | Contact : cliquer sur « Autre calcul » | L'image change, le champ se vide | OK — 15/10/2026 |
 
 ## 2. Connexion et sécurité du panel
 
@@ -94,6 +98,7 @@ Ces tests demandent de regarder l'écran : ils se font à la main.
 | E01 | E-mails (onglet SMTP) > Tester l'envoi | E-mail de test reçu (vérifier aussi les Spam) | OK — 15/10/2026 (confirmé par l'étudiant) |
 | E02 | Changer son mot de passe (module Mot de passe) | E-mail « Alerte de sécurité : mot de passe modifié » reçu | À faire |
 | E03 | Mot de passe oublié > Envoyer un code | Le code à 8 chiffres arrive par e-mail | À faire |
+| E04 | Envoyer un message depuis la page Contact, puis cliquer sur « Répondre » dans la boîte de réception | L'e-mail arrive avec le nom, l'e-mail et le message du visiteur ; « Répondre » écrit à l'adresse du visiteur | À faire |
 
 ---
 
@@ -101,4 +106,5 @@ Ces tests demandent de regarder l'écran : ils se font à la main.
 
 | Date | Type | Résultat | Remarques |
 |------|------|----------|-----------|
+| 15/10/2026 | Tests du CAPTCHA et de l'envoi des messages de contact (T39 à T42) | **OK** | Envoi en mode PHP mail pendant le test (aucun e-mail réel) ; en-tête « Répondre à » vérifié sur un message SMTP préparé sans être envoyé. |
 | 15/10/2026 | Recette automatisée (tests T01 à T38) | **39 / 39 OK** | Exécutée avec un compte administrateur de test temporaire et l'envoi en mode PHP mail (aucun e-mail réel) ; le vrai compte, la configuration et toutes les données ont été restaurés à l'identique ensuite. |

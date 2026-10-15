@@ -8,6 +8,7 @@
    3. Apparition en fondu (fade-in) des sections au chargement
    4. Filtre des produits en temps réel (page Nos Produits)
    5. Validation du formulaire de contact (page Contact)
+   6. Bouton « Autre calcul » du CAPTCHA (page Contact)
    ========================================================================== */
 
 // Signale au CSS que JavaScript est actif : les sections .fade-in ne sont
@@ -21,6 +22,7 @@ document.addEventListener('DOMContentLoaded', function () {
     initApparition();
     initFiltreProduits();
     initCorrectionErreurs();
+    initCaptcha();
 });
 
 
@@ -137,10 +139,11 @@ function validateForm() {
     const nom = formulaire.elements.nom;
     const email = formulaire.elements.email;
     const message = formulaire.elements.message;
+    const captcha = formulaire.elements.captcha;
     const formatEmail = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
     const erreurs = [];
 
-    [nom, email, message].forEach(effacerErreur);
+    [nom, email, message, captcha].forEach(effacerErreur);
 
     if (nom.value.trim() === '') {
         erreurs.push([nom, 'Veuillez indiquer votre nom.']);
@@ -152,6 +155,10 @@ function validateForm() {
     }
     if (message.value.trim() === '') {
         erreurs.push([message, 'Veuillez écrire votre message.']);
+    }
+    // Le CAPTCHA est vérifié par PHP ; ici on contrôle seulement qu'un nombre a été saisi
+    if (!/^\d{1,3}$/.test(captcha.value.trim())) {
+        erreurs.push([captcha, 'Veuillez écrire le résultat du calcul (un nombre).']);
     }
 
     erreurs.forEach(function (erreur) {
@@ -184,5 +191,21 @@ function initCorrectionErreurs() {
 
     formulaire.addEventListener('input', function (event) {
         if (event.target.classList.contains('invalid')) effacerErreur(event.target);
+    });
+}
+
+
+/* ----- 6. CAPTCHA : bouton « Autre calcul » ----- */
+// Recharge l'image : captcha.php tire alors un nouveau calcul (seul le dernier affiché est valable).
+function initCaptcha() {
+    const bouton = document.getElementById('captcha-nouveau');
+    const image = document.getElementById('captcha-image');
+    const champ = document.getElementById('captcha');
+    if (!bouton || !image || !champ) return;
+
+    bouton.addEventListener('click', function () {
+        image.src = 'captcha.php?v=' + Date.now();  // adresse unique : le navigateur ne réutilise pas l'ancienne image
+        champ.value = '';
+        champ.focus();
     });
 }

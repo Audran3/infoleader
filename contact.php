@@ -1,9 +1,13 @@
 <?php
 // ===== Traitement du formulaire de contact =====
-// Aucun e-mail n'est envoyé : le message est enregistré dans storage/data/messages_contact.json
-// et consultable dans le panel (Maintenance > Journaux > Messages de contact).
-// PHP revérifie les données, car la validation JavaScript peut être contournée.
+// Chaque message valide est :
+//   1. enregistré dans storage/data/messages_contact.json (panel : Maintenance > Journaux > Messages de contact) ;
+//   2. envoyé par e-mail à la boîte de réception définie dans le panel (Configuration des e-mails),
+//      avec l'adresse du visiteur comme adresse de réponse.
+// Anti-spam : champ piège, CAPTCHA (calcul en image) et limite de 3 messages par IP en 10 minutes.
+// PHP revérifie tout, car la validation JavaScript peut être contournée.
 require __DIR__ . '/includes/bootstrap.php';
+demarrerSessionPublique();  // la réponse du CAPTCHA est gardée dans la session du visiteur
 
 // Durée de conservation annoncée dans la mention d'information (RGPD-1), réglée dans config/securite.json
 $dureeConservation = (int) configSecurite()['contact_conservation_mois'];
@@ -41,6 +45,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$envoye) {
         $erreurs['message'] = 'Veuillez écrire votre message.';
     }
 
+    // Anti-abus — CAPTCHA : le visiteur recopie le résultat du calcul affiché dans l'image.
+    // Le calcul ne sert qu'une fois : en cas d'erreur, une nouvelle image est proposée.
+    if (!captchaValide((string) ($_POST['captcha'] ?? ''))) {
+        $erreurs['captcha'] = 'Le résultat du calcul est incorrect ou a expiré. Un nouveau calcul vous est proposé.';
+        journaliser('blocage', 'Formulaire de contact : CAPTCHA incorrect.');
+    }
+
     // Anti-abus (SEC-3) — 2. Limite par adresse IP : 3 messages au plus en 10 minutes (config/securite.json)
     $securite = configSecurite();
     if (empty($erreurs)
@@ -51,9 +62,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$envoye) {
             . $securite['contact_fenetre_minutes'] . ' minutes atteinte, message refusé.');
     }
 
-    // Formulaire valide : le message est enregistré, puis les champs sont vidés
+    // Formulaire valide : le message est enregistré, envoyé par e-mail, puis les champs sont vidés
     if (empty($erreurs)) {
         if (enregistrerMessageContact($nom, $email, $message)) {
+            // Envoi à la boîte configurée dans le panel ; « Répondre » écrira directement au visiteur.
+            // Si l'envoi échoue, le message reste enregistré : le visiteur n'a rien à refaire.
+            $nomPourSujet = mb_substr(str_replace(["\r", "\n"], ' ', $nom), 0, 100);
+            $envoiMail = envoyerMail(
+                'InfoLeader — Nouveau message de contact de ' . $nomPourSujet,
+                texteMailContact($nom, $email, $message),
+                $email,
+                $nomPourSujet
+            );
+            journaliser('evenement', 'Message de contact reçu'
+                . ($envoiMail['ok'] ? ' et transmis par e-mail.' : ', e-mail non envoyé (' . $envoiMail['erreur'] . ').'));
             $envoye = true;
             $nom = $email = $message = '';
         } else {
@@ -131,10 +153,25 @@ require __DIR__ . '/includes/entete-public.php';
                             <input type="text" id="site_web" name="site_web" value="" tabindex="-1" autocomplete="off">
                         </div>
 
+                        <!-- CAPTCHA anti-spam : recopier le résultat du calcul dessiné dans l'image (captcha.php) -->
+                        <div class="form-group">
+                            <label for="captcha">Vérification anti-spam <span class="required">*</span></label>
+                            <div class="captcha">
+                                <img src="captcha.php?v=<?= time() ?>" alt="Calcul à résoudre" width="180" height="56" id="captcha-image">
+                                <button type="button" class="captcha-nouveau" id="captcha-nouveau">&#8635; Autre calcul</button>
+                            </div>
+                            <input type="text" id="captcha" name="captcha" required inputmode="numeric" maxlength="3" autocomplete="off"
+                                   aria-describedby="captcha-aide captcha-error"<?= attributsErreur('captcha', $erreurs) ?>>
+                            <p class="form-note" id="captcha-aide">Écrivez le résultat du calcul affiché dans l'image (exemple : 7 + 4 = ? → 11).
+                                Si vous n'y parvenez pas, écrivez-nous à contact@infoleader.fr ou appelez le 04 78 00 00 00.</p>
+                            <span class="error-message" id="captcha-error"><?= e($erreurs['captcha'] ?? '') ?></span>
+                        </div>
+
                         <!-- Mention d'information sur les données personnelles (RGPD-1) -->
                         <p class="form-rgpd" id="mention-rgpd">
-                            Les informations saisies (nom, e-mail, message) et votre adresse IP sont enregistrées par InfoLeader
-                            uniquement pour répondre à votre demande et protéger ce formulaire contre les abus. Elles ne sont ni vendues
+                            Les informations saisies (nom, e-mail, message) et votre adresse IP sont enregistrées par InfoLeader et
+                            transmises par e-mail à notre équipe, uniquement pour répondre à votre demande et protéger ce formulaire
+                            contre les abus. Elles ne sont ni vendues
                             ni transmises à des tiers, et sont conservées au plus <?= $dureeConservation ?> mois. Vous pouvez demander
                             à les consulter, les corriger ou les supprimer en écrivant à contact@infoleader.fr. Vous pouvez aussi
                             adresser une réclamation à la CNIL (www.cnil.fr).

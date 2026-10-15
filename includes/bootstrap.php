@@ -35,6 +35,7 @@ require_once __DIR__ . '/securite.php';
 require_once __DIR__ . '/mailer.php';
 require_once __DIR__ . '/systeme.php';
 require_once __DIR__ . '/layout.php';
+require_once __DIR__ . '/captcha.php';
 
 // Échappe un texte avant de l'afficher dans le HTML (protection contre l'injection de code)
 function e($texte): string

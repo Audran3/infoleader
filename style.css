@@ -477,6 +477,40 @@ textarea {
     color: var(--gris-texte);
 }
 
+/* CAPTCHA du formulaire de contact : image du calcul + bouton « Autre calcul » */
+.captcha {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.captcha img {
+    display: block;
+    border: 1px solid var(--bordure);
+    border-radius: var(--rayon);
+}
+
+.captcha-nouveau {
+    padding: 8px 14px;
+    font: inherit;
+    font-size: 0.9rem;
+    color: var(--bleu);
+    background: var(--blanc);
+    border: 1px solid var(--bleu);
+    border-radius: 50px;
+    cursor: pointer;
+}
+
+.captcha-nouveau:hover {
+    background: var(--gris-clair);
+}
+
+#captcha {
+    max-width: 120px;
+}
+
 /* Mention d'information sur les données personnelles (RGPD-1) */
 .form-rgpd {
     margin: 4px 0 18px;

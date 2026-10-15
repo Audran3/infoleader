@@ -29,7 +29,7 @@ InfoLeader est le site vitrine d'une entreprise fictive qui vend des périphéri
 |------|---------|-----------------|
 | Accueil | `index.php` | Bannière, slogan, bouton « Découvrir nos produits », présentation, 3 points forts |
 | Nos Produits | `products.php` | 6 produits lus dans `products.json`, grille responsive, filtre de recherche en temps réel |
-| Contact | `contact.php` | Formulaire nom / e-mail / message, validation JavaScript et PHP, enregistrement du message, anti-abus, mention d'information RGPD |
+| Contact | `contact.php` | Formulaire nom / e-mail / message, validation JavaScript et PHP, CAPTCHA (calcul en image), enregistrement du message et envoi par e-mail à l'équipe, anti-abus, mention d'information RGPD |
 
 Un bouton « Administration » dans le menu des 3 pages mène au panneau d'administration (`admin/`).
 
@@ -66,7 +66,8 @@ MySQL est installé avec WAMP mais **n'est pas utilisé** par le site : aucun ap
 infoleader/
 ├── index.php              Accueil
 ├── products.php           Nos Produits (lit products.json)
-├── contact.php            Contact (formulaire + enregistrement du message)
+├── contact.php            Contact (formulaire, CAPTCHA, enregistrement et envoi par e-mail du message)
+├── captcha.php            Image du CAPTCHA (nouveau calcul à chaque affichage)
 ├── style.css              Styles du site public (576 lignes)
 ├── script.js              JavaScript du site public (154 lignes)
 ├── products.json          Catalogue des 6 produits
@@ -99,6 +100,7 @@ infoleader/
 │   ├── mailer.php         Envoi des e-mails (PHP mail ou SMTP via PHPMailer)
 │   ├── systeme.php        Diagnostic, fichiers temporaires, sauvegarde JSON
 │   ├── layout.php         Gabarit HTML du panel (en-tête, messages, modales)
+│   ├── captcha.php        CAPTCHA : session publique, calcul, vérification, dessin de l'image
 │   ├── entete-public.php  Début commun des pages publiques (head, en-tête, menu)
 │   ├── pied-public.php    Pied de page commun des pages publiques
 │   ├── creer-admin.php    Outil en ligne de commande : crée / réinitialise le compte admin
@@ -195,6 +197,7 @@ Les fichiers de `storage/data/` sont créés à la première écriture. Les vale
 - Dossiers `config/`, `includes/`, `storage/`, `vendor/` protégés par un `.htaccess` contenant `Require all denied`. La section Système vérifie que la protection est réellement appliquée (réponse HTTP 403).
 - Fichier `.gitignore` : les secrets et les données personnelles ne sont jamais envoyés sur GitHub.
 - Formulaire de contact : limite de 3 messages par IP en 10 minutes et champ piège anti-robots ; les refus sont inscrits au journal (type `blocage`).
+- CAPTCHA du formulaire de contact (`includes/captcha.php`, image servie par `captcha.php`) : un calcul (ex. « 7 + 4 = ? ») dessiné dans une image brouillée par l'extension GD de PHP, sans service externe. La réponse est gardée dans une session publique distincte de celle du panel (`INFOLEADER_CONTACT`), ne sert qu'une fois et expire après 15 minutes. Un formulaire envoyé sans avoir affiché l'image est refusé.
 - `includes/creer-admin.php` refuse de s'exécuter hors ligne de commande (`PHP_SAPI !== 'cli'`).
 - Actions irréversibles du panel (purges, export) confirmées par une fenêtre modale.
 
@@ -220,7 +223,8 @@ Les fichiers de `storage/data/` sont créés à la première écriture. Les vale
 
 | Intégration | Détail | Fichier |
 |-------------|--------|---------|
-| Envoi d'e-mails par SMTP | PHPMailer 7.1.1. Configuration actuelle : `mail.olivier-dutoit.fr`, port 465, SSL. Utilisé pour le test d'envoi et le code « mot de passe oublié » | `includes/mailer.php`, `config/mail.json` |
+| Envoi d'e-mails par SMTP | PHPMailer 7.1.1. Configuration actuelle : `mail.olivier-dutoit.fr`, port 465, SSL. Utilisé pour le test d'envoi, le code « mot de passe oublié », les alertes de sécurité et chaque message du formulaire de contact (envoyé au destinataire configuré, avec l'adresse du visiteur en « Répondre à ») | `includes/mailer.php`, `config/mail.json`, `contact.php` |
+| Bibliothèque GD de PHP | Dessin de l'image du CAPTCHA ; police `C:/Windows/Fonts/arialbd.ttf` si elle existe, sinon police intégrée à GD | `includes/captcha.php` |
 | PHP mail | Fonction `mail()`. Ne fonctionne pas sous WAMP (aucun serveur de messagerie local) | `includes/mailer.php` |
 
 Aucune API externe, aucun CDN, aucune police en ligne, aucun outil de statistiques, aucun paiement.
@@ -265,6 +269,8 @@ Classés du plus urgent au moins urgent. Mise à jour du 15/10/2026 après les j
 17. **Confusion possible entre les onglets** de `admin/email.php` : enregistrer depuis l'onglet PHP mail rebascule le mode actif sur PHP mail.
 
 **Front-end et ergonomie**
+
+- **CAPTCHA et accessibilité** : une personne aveugle ne peut pas lire l'image du calcul. Le texte d'aide propose l'e-mail et le téléphone de l'entreprise comme solution de remplacement. Un robot capable de lire les images (OCR) pourrait aussi résoudre le calcul ; la limite par IP et le champ piège restent en place derrière.
 
 18. Pas de page d'erreur 404 personnalisée.
 19. Pas de thème sombre.

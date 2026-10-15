@@ -98,6 +98,13 @@ La colonne « Statut » se met à jour au fil du travail : ☐ à faire, ☑ ter
 | EXP-1 | **Outil de déblocage d'adresse IP** en ligne de commande (sur le modèle de `creer-admin.php`), pour ne plus devoir supprimer `limitation.json` à la main. | P1 | Simple | `includes/debloquer-ip.php` (nouveau), `README.md` | Après 10 échecs volontaires, la commande débloque l'IP et la connexion redevient possible immédiatement. | ☑ 15/10/2026 |
 | EXP-2 | **Une seule copie de travail** : travailler uniquement dans `C:\wamp64\www\infoleader` et ne garder sur le Bureau qu'une sauvegarde datée (dossier compressé sans les secrets). | P2 | Simple | — (procédure dans `README.md`) | Le `README.md` décrit la procédure de sauvegarde et de restauration ; une sauvegarde a été faite et restaurée une fois pour vérifier. | ☐ |
 
+## 8 bis. Ajouts demandés par le client (hors plan initial)
+
+| N° | Action | Priorité | Complexité | Fichiers concernés | Critère d'acceptation | Statut |
+|----|--------|----------|------------|--------------------|-----------------------|--------|
+| CLI-1 | **CAPTCHA sur le formulaire de contact** : calcul affiché dans une image générée par PHP (extension GD, déjà active sous WAMP), sans service externe. | P1 | Moyen | `includes/captcha.php` (nouveau), `captcha.php` (nouveau), `contact.php`, `script.js`, `style.css` | Un mauvais résultat ou un formulaire envoyé sans image est refusé ; une même réponse ne sert qu'une fois ; « Autre calcul » change l'image. | ☑ 15/10/2026 |
+| CLI-2 | **Envoyer chaque message de contact par e-mail** à la boîte configurée dans le panel, avec l'adresse du visiteur en « Répondre à ». | P1 | Simple | `contact.php`, `includes/mailer.php` | Un message valide est enregistré et un e-mail part vers la boîte configurée ; « Répondre » écrit au visiteur. | ☑ 15/10/2026 (testé sans envoi réel ; réception à confirmer, test E04) |
+
 ---
 
 ## 9. Définition de Terminé

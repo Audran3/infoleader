@@ -4,7 +4,7 @@ Site vitrine de l'entreprise fictive **InfoLeader**, spécialisée dans la vente
 (claviers, souris, écrans, casques, webcams, hubs), avec un **panneau d'administration** sécurisé.
 
 Site 100 % local, exécuté par **WAMP** (Apache + PHP 8). Aucune base de données (les données sont dans des fichiers JSON),
-aucun framework. Seule dépendance : **PHPMailer** (envoi des e-mails via Brevo).
+aucun framework. Seule dépendance : **PHPMailer** (envoi des e-mails par un serveur SMTP).
 
 ## Pages publiques
 
@@ -21,7 +21,7 @@ aucun framework. Seule dépendance : **PHPMailer** (envoi des e-mails via Brevo)
 | Connexion | `admin/login.php` | Connexion + anti-brute force (3 s d'attente, puis 10 s, 30 s, 60 s, puis blocage de l'IP 4 h au 10e échec) |
 | Mot de passe oublié | `admin/forgot-password.php` | Code à 8 chiffres envoyé par e-mail, valable 5 minutes, 5 essais maximum |
 | Tableau de bord | `admin/dashboard.php` | Informations du compte connecté + accès aux 4 outils |
-| Configuration des e-mails | `admin/email.php` | PHP mail (hébergeur web) ou Brevo.com (SMTP), bouton « Tester l'envoi », logs de débogage |
+| Configuration des e-mails | `admin/email.php` | PHP mail (hébergeur web) ou SMTP (PHPMailer), bouton « Tester l'envoi », logs de débogage |
 | Mot de passe | `admin/password.php` | Mot de passe actuel exigé, nouveau mot de passe de 20 caractères minimum respectant les règles |
 | Utilisateur | `admin/user.php` | Changement de l'e-mail de connexion (mot de passe actuel, syntaxe, adresse différente, double saisie) |
 | Maintenance | `admin/maintenance.php` | Système, Journaux (connexions + messages de contact), Sauvegarde JSON, Purger storage/tmp |

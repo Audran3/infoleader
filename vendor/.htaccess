@@ -1,0 +1,2 @@
+# Accès interdit depuis le navigateur : ce dossier n'est lu que par PHP
+Require all denied

@@ -1,0 +1,21 @@
+{
+    "paliers_attente": [
+        { "a_partir_de": 1, "secondes": 3 },
+        { "a_partir_de": 4, "secondes": 10 },
+        { "a_partir_de": 6, "secondes": 30 },
+        { "a_partir_de": 8, "secondes": 60 }
+    ],
+    "echecs_avant_blocage": 10,
+    "duree_blocage_heures": 4,
+    "oubli_echecs_minutes": 60,
+    "duree_session_minutes": 30,
+    "validite_code_minutes": 5,
+    "essais_code_max": 5,
+    "delai_renvoi_code_secondes": 60,
+    "demandes_code_max": 3,
+    "demandes_code_fenetre_minutes": 60,
+    "contact_max_messages": 3,
+    "contact_fenetre_minutes": 10,
+    "contact_conservation_mois": 12,
+    "journal_conservation_mois": 6
+}

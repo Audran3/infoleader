@@ -1,0 +1,50 @@
+[
+    {
+        "id": 1,
+        "nom": "Clavier mécanique Logitech G Pro X",
+        "categorie": "Clavier",
+        "prix": 129.99,
+        "description": "Clavier gaming compact (sans pavé numérique) à switchs interchangeables, rétroéclairage RGB LIGHTSYNC et câble détachable.",
+        "image": "assets/products/clavier.jpg"
+    },
+    {
+        "id": 2,
+        "nom": "Souris sans fil Razer DeathAdder V3 Pro",
+        "categorie": "Souris",
+        "prix": 149.99,
+        "description": "Souris ergonomique ultra-légère (63 g), capteur optique Focus Pro 30K et jusqu'à 90 heures d'autonomie.",
+        "image": "assets/products/souris.jpg"
+    },
+    {
+        "id": 3,
+        "nom": "Écran 27\" LG UltraFine 4K",
+        "categorie": "Écran",
+        "prix": 449.00,
+        "description": "Dalle IPS 4K UHD (3840 × 2160) compatible HDR10, port USB-C 96 W pour connecter et recharger un ordinateur portable.",
+        "image": "assets/products/ecran.jpg"
+    },
+    {
+        "id": 4,
+        "nom": "Casque gaming SteelSeries Arctis Nova 7",
+        "categorie": "Casque",
+        "prix": 179.99,
+        "description": "Casque sans fil 2,4 GHz et Bluetooth, micro rétractable à réduction de bruit, jusqu'à 38 heures d'autonomie.",
+        "image": "assets/products/casque.jpg"
+    },
+    {
+        "id": 5,
+        "nom": "Webcam Logitech C920 HD Pro",
+        "categorie": "Webcam",
+        "prix": 79.99,
+        "description": "Webcam Full HD 1080p à 30 images/s, deux micros stéréo et correction automatique de la luminosité pour vos visioconférences.",
+        "image": "assets/products/webcam.jpg"
+    },
+    {
+        "id": 6,
+        "nom": "Hub USB-C Anker 7-en-1",
+        "categorie": "Hub USB",
+        "prix": 39.99,
+        "description": "Sortie HDMI 4K, 2 ports USB-A 5 Gb/s, lecteurs de cartes SD et microSD, recharge Power Delivery jusqu'à 100 W.",
+        "image": "assets/products/hub.jpg"
+    }
+]

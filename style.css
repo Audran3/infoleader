@@ -1,0 +1,699 @@
+/* ==========================================================================
+   InfoLeader — style.css
+   Feuille de style unique, partagée par les 3 pages.
+   Approche « mobile-first » : les règles de base visent le mobile,
+   les media queries (min-width) adaptent ensuite à la tablette et à l'ordinateur.
+   ========================================================================== */
+
+/* ----- 1. Charte graphique (variables CSS) ----- */
+:root {
+    --bleu: #0056b3;          /* bleu tech : couleur principale */
+    --bleu-fonce: #00428a;    /* survol des boutons bleus */
+    --gris-fonce: #2d2d2d;    /* textes, pied de page */
+    --blanc: #ffffff;
+    --vert: #4caf50;          /* accent : appel à l'action, soulignements */
+    --vert-texte: #2e7d32;    /* vert assez foncé pour du texte lisible */
+    --rouge: #c62828;         /* messages d'erreur */
+    --gris-clair: #f4f6f9;    /* fonds de sections */
+    --gris-texte: #5f6670;    /* textes secondaires */
+    --bordure: #dde2e8;
+
+    --police: "Segoe UI", Roboto, Arial, sans-serif;
+    --rayon: 8px;
+    --ombre: 0 2px 8px rgba(0, 0, 0, 0.08);
+    --ombre-forte: 0 10px 24px rgba(0, 0, 0, 0.14);
+    --hauteur-header: 64px;
+    --largeur-max: 1100px;
+}
+
+/* ----- 2. Base ----- */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: var(--police);
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--gris-fonce);
+    background: var(--blanc);
+}
+
+h1, h2, h3 {
+    line-height: 1.25;
+}
+
+img {
+    max-width: 100%;
+}
+
+a {
+    color: var(--bleu);
+}
+
+/* Contour visible au clavier (accessibilité) */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+    outline: 3px solid var(--vert);
+    outline-offset: 2px;
+}
+
+/* Un élément masqué par le filtre JavaScript doit vraiment disparaître */
+[hidden] {
+    display: none !important;
+}
+
+/* Les ancres (#presentation, #formulaire) ne passent pas sous l'en-tête fixe */
+[id] {
+    scroll-margin-top: calc(var(--hauteur-header) + 16px);
+}
+
+.container {
+    max-width: var(--largeur-max);
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* ----- 3. En-tête et menu de navigation ----- */
+.site-header {
+    position: sticky;          /* le menu reste en haut de l'écran */
+    top: 0;
+    z-index: 100;
+    background: var(--blanc);
+    box-shadow: var(--ombre);
+}
+
+.header-inner {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: var(--hauteur-header);
+}
+
+.logo {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--gris-fonce);
+    text-decoration: none;
+}
+
+.logo span {
+    color: var(--bleu);
+}
+
+/* Bouton hamburger (mobile) */
+.nav-toggle {
+    display: block;
+    width: 44px;
+    height: 44px;
+    padding: 10px;
+    background: none;
+    border: 0;
+    border-radius: var(--rayon);
+    cursor: pointer;
+}
+
+.nav-toggle-bar {
+    display: block;
+    height: 3px;
+    margin: 4px 0;
+    background: var(--gris-fonce);
+    border-radius: 2px;
+    transition: transform 0.25s ease, opacity 0.25s ease;
+}
+
+/* Les 3 barres se transforment en croix quand le menu est ouvert */
+.nav-toggle[aria-expanded="true"] .nav-toggle-bar:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+}
+.nav-toggle[aria-expanded="true"] .nav-toggle-bar:nth-child(2) {
+    opacity: 0;
+}
+.nav-toggle[aria-expanded="true"] .nav-toggle-bar:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+}
+
+/* Menu déroulant sous l'en-tête (mobile) */
+.main-nav ul {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin: 0;
+    padding: 8px 0;
+    list-style: none;
+    background: var(--blanc);
+    border-top: 1px solid var(--bordure);
+    box-shadow: var(--ombre-forte);
+}
+
+.main-nav ul.open {
+    display: block;
+}
+
+.main-nav a {
+    display: block;
+    padding: 12px 20px;
+    font-weight: 600;
+    color: var(--gris-fonce);
+    text-decoration: none;
+}
+
+.main-nav a:hover,
+.main-nav a.active {
+    color: var(--bleu);
+}
+
+/* Bouton d'accès au panneau d'administration */
+.main-nav a.btn-admin {
+    margin: 8px 20px 4px;
+    padding: 10px 18px;
+    text-align: center;
+    color: var(--blanc);
+    background: var(--bleu);
+    border-radius: 50px;
+    transition: background-color 0.25s ease;
+}
+
+.main-nav a.btn-admin:hover,
+.main-nav a.btn-admin:focus-visible {
+    color: var(--blanc);
+    background: var(--bleu-fonce);
+}
+
+/* ----- 4. Bannière d'accueil ----- */
+.banner {
+    padding: 80px 0 88px;
+    text-align: center;
+    color: var(--blanc);
+    background-color: var(--bleu);
+    background-image:
+        linear-gradient(135deg, rgba(0, 40, 85, 0.88), rgba(0, 86, 179, 0.72)),
+        url("assets/banner.jpg");
+    background-size: cover;
+    background-position: center;
+}
+
+.banner h1 {
+    margin: 0 0 12px;
+    font-size: 2.1rem;
+}
+
+.slogan {
+    max-width: 680px;
+    margin: 0 auto 16px;
+    font-size: 1.2rem;
+    font-weight: 400;
+}
+
+.banner-text {
+    max-width: 620px;
+    margin: 0 auto 32px;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+/* Bouton d'appel à l'action : la couleur change au survol */
+.cta {
+    display: inline-block;
+    padding: 14px 32px;
+    font-weight: 700;
+    color: var(--gris-fonce);
+    text-decoration: none;
+    background: var(--vert);
+    border-radius: 50px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.25s ease, color 0.25s ease, transform 0.25s ease;
+}
+
+.cta:hover,
+.cta:focus-visible {
+    color: var(--bleu);
+    background: var(--blanc);
+    transform: translateY(-2px);
+}
+
+.banner-link {
+    display: block;
+    width: fit-content;
+    margin: 20px auto 0;
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: none;
+}
+
+.banner-link:hover {
+    text-decoration: underline;
+}
+
+/* ----- 5. Sections de contenu ----- */
+.section {
+    padding: 56px 0;
+}
+
+.section-alt {
+    background: var(--gris-clair);
+}
+
+.section-title {
+    margin: 0 0 20px;
+    font-size: 1.75rem;
+}
+
+/* Petit trait vert sous les titres de section */
+.section-title::after {
+    content: "";
+    display: block;
+    width: 60px;
+    height: 4px;
+    margin-top: 10px;
+    background: var(--vert);
+    border-radius: 2px;
+}
+
+.intro {
+    max-width: 800px;
+    color: var(--gris-texte);
+}
+
+.features {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+}
+
+.feature {
+    padding: 24px;
+    background: var(--blanc);
+    border-top: 4px solid var(--bleu);
+    border-radius: var(--rayon);
+    box-shadow: var(--ombre);
+}
+
+.feature h3 {
+    margin: 0 0 8px;
+    color: var(--bleu);
+}
+
+.feature p {
+    margin: 0;
+    color: var(--gris-texte);
+}
+
+/* ----- 6. En-tête des pages intérieures (Produits, Contact) ----- */
+.page-header {
+    padding: 48px 0;
+    text-align: center;
+    color: var(--blanc);
+    background: linear-gradient(135deg, var(--gris-fonce), var(--bleu));
+}
+
+.page-header h1 {
+    margin: 0 0 8px;
+    font-size: 2rem;
+}
+
+.page-header p {
+    max-width: 620px;
+    margin: 0 auto;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.page-content {
+    padding: 40px 0 64px;
+    background: var(--gris-clair);
+}
+
+/* ----- 7. Page « Nos Produits » ----- */
+.search-bar {
+    margin-bottom: 32px;
+    padding: 20px;
+    background: var(--blanc);
+    border-radius: var(--rayon);
+    box-shadow: var(--ombre);
+}
+
+.search-bar label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.search-count {
+    margin: 10px 0 0;
+    font-size: 0.9rem;
+    color: var(--gris-texte);
+}
+
+.products-grid {
+    display: grid;
+    grid-template-columns: 1fr;   /* 1 colonne sur mobile */
+    gap: 24px;
+}
+
+.product-card {
+    overflow: hidden;
+    background: var(--blanc);
+    border-radius: var(--rayon);
+    box-shadow: var(--ombre);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.product-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--ombre-forte);
+}
+
+.product-card img {
+    display: block;
+    width: 100%;
+    height: auto;
+    background: var(--gris-clair);
+}
+
+.product-body {
+    padding: 20px;
+}
+
+.product-category {
+    display: inline-block;
+    margin: 0 0 10px;
+    padding: 3px 10px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--vert-texte);
+    background: rgba(76, 175, 80, 0.14);
+    border-radius: 50px;
+}
+
+.product-name {
+    margin: 0 0 8px;
+    font-size: 1.15rem;
+}
+
+.product-description {
+    margin: 0;
+    font-size: 0.95rem;
+    color: var(--gris-texte);
+}
+
+.product-price {
+    margin: 14px 0 0;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--bleu);
+}
+
+.no-results {
+    padding: 32px;
+    text-align: center;
+    color: var(--gris-texte);
+    background: var(--blanc);
+    border-radius: var(--rayon);
+}
+
+/* ----- 8. Formulaires (recherche et contact) ----- */
+input,
+textarea {
+    width: 100%;
+    padding: 12px 14px;
+    font: inherit;
+    color: var(--gris-fonce);
+    background: var(--blanc);
+    border: 1px solid var(--bordure);
+    border-radius: var(--rayon);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+input:focus,
+textarea:focus {
+    border-color: var(--bleu);
+    box-shadow: 0 0 0 3px rgba(0, 86, 179, 0.18);
+}
+
+textarea {
+    min-height: 150px;
+    resize: vertical;
+}
+
+.form-group {
+    margin-bottom: 18px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+}
+
+.required {
+    color: var(--rouge);
+}
+
+/* Champ refusé par la validation (JavaScript ou PHP) */
+.invalid {
+    border-color: var(--rouge);
+}
+
+.error-message {
+    display: block;
+    min-height: 1.3em;
+    margin-top: 4px;
+    font-size: 0.9rem;
+    color: var(--rouge);
+}
+
+.form-note {
+    margin: 12px 0 0;
+    font-size: 0.85rem;
+    color: var(--gris-texte);
+}
+
+/* Mention d'information sur les données personnelles (RGPD-1) */
+.form-rgpd {
+    margin: 4px 0 18px;
+    padding: 10px 14px;
+    font-size: 0.82rem;
+    line-height: 1.5;
+    color: var(--gris-texte);
+    background: var(--gris-clair);
+    border-left: 3px solid var(--bleu);
+    border-radius: 4px;
+}
+
+/* Champ piège anti-robots (SEC-3) : placé hors de l'écran plutôt que masqué
+   par display:none, que certains robots savent repérer */
+.champ-piege {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+.btn {
+    display: inline-block;
+    padding: 14px 28px;
+    font: inherit;
+    font-weight: 700;
+    color: var(--blanc);
+    background: var(--bleu);
+    border: 0;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: background-color 0.25s ease;
+}
+
+.btn:hover {
+    background: var(--bleu-fonce);
+}
+
+/* ----- 9. Page « Contact » ----- */
+.contact-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 32px;
+}
+
+.card {
+    padding: 28px;
+    background: var(--blanc);
+    border-radius: var(--rayon);
+    box-shadow: var(--ombre);
+}
+
+.card h2 {
+    margin: 0 0 20px;
+    font-size: 1.4rem;
+}
+
+.contact-info {
+    border-top: 4px solid var(--vert);
+}
+
+.contact-info p {
+    margin: 0 0 16px;
+    color: var(--gris-texte);
+}
+
+.contact-info strong {
+    color: var(--gris-fonce);
+}
+
+.alert {
+    margin: 0 0 20px;
+    padding: 14px 18px;
+    border-left: 5px solid;
+    border-radius: var(--rayon);
+}
+
+.alert p,
+.alert ul {
+    margin: 0;
+}
+
+.alert ul {
+    padding-left: 20px;
+}
+
+.alert-success {
+    color: #1b5e20;
+    background: #e8f5e9;
+    border-color: var(--vert);
+}
+
+.alert-error {
+    color: #8e1b1b;
+    background: #fdecea;
+    border-color: var(--rouge);
+}
+
+/* ----- 10. Pied de page ----- */
+.site-footer {
+    padding: 32px 0;
+    font-size: 0.9rem;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.8);
+    background: var(--gris-fonce);
+}
+
+.site-footer p {
+    margin: 0 0 8px;
+}
+
+.site-footer strong {
+    color: var(--blanc);
+}
+
+/* ----- 11. Animation d'apparition (activée par script.js) ----- */
+/* La classe .js n'existe que si JavaScript fonctionne : sans JS, tout reste visible. */
+.js .fade-in {
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.js .fade-in.visible {
+    opacity: 1;
+    transform: none;
+}
+
+/* Respecte le réglage « réduire les animations » du système */
+@media (prefers-reduced-motion: reduce) {
+    .js .fade-in,
+    .cta,
+    .product-card {
+        transform: none;
+        transition: none;
+    }
+}
+
+/* ----- 12. Tablette (600 px et plus) ----- */
+@media (min-width: 600px) {
+    .products-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* ----- 13. Ordinateur (768 px et plus) ----- */
+@media (min-width: 768px) {
+    .nav-toggle {
+        display: none;
+    }
+
+    /* Le menu redevient une barre horizontale toujours visible */
+    .main-nav ul {
+        display: flex;
+        position: static;
+        gap: 8px;
+        padding: 0;
+        border: 0;
+        box-shadow: none;
+    }
+
+    .main-nav a {
+        padding: 8px 14px;
+        border-bottom: 3px solid transparent;
+    }
+
+    .main-nav a.active {
+        border-bottom-color: var(--vert);
+    }
+
+    .main-nav a.btn-admin {
+        margin: 0 0 0 8px;
+        padding: 8px 18px;
+        border-bottom: 0;
+    }
+
+    .banner {
+        padding: 120px 0 128px;
+    }
+
+    .banner h1 {
+        font-size: 3rem;
+    }
+
+    .slogan {
+        font-size: 1.45rem;
+    }
+
+    .features {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .page-header h1 {
+        font-size: 2.5rem;
+    }
+
+    .contact-layout {
+        grid-template-columns: 2fr 1fr;
+        align-items: start;
+    }
+
+    .footer-inner {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        text-align: left;
+    }
+
+    .site-footer p {
+        margin: 0;
+    }
+}
+
+/* ----- 14. Grand écran (960 px et plus) ----- */
+@media (min-width: 960px) {
+    .products-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}

@@ -1,0 +1,14 @@
+{
+    "mode": "smtp",
+    "smtp_configure": false,
+    "expediteur_nom": "InfoLeader",
+    "expediteur_email": "",
+    "destinataire": "",
+    "smtp_hote": "mail.olivier-dutoit.fr",
+    "smtp_port": 465,
+    "smtp_securite": "ssl",
+    "smtp_identifiant": "",
+    "smtp_mot_de_passe": "",
+    "logs_debogage": false,
+    "modifie_le": null
+}

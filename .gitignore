@@ -1,0 +1,32 @@
+# ==========================================================================
+# InfoLeader — fichiers à ne JAMAIS envoyer sur GitHub (tâche SEC-1)
+# Ils contiennent des secrets ou des données personnelles, et n'existent
+# que sur le poste local (WAMP).
+# ==========================================================================
+
+# Compte administrateur (hash du mot de passe, dernière IP de connexion)
+config/admin.json
+
+# Réglages d'envoi des e-mails : contient le mot de passe SMTP EN CLAIR.
+# Le modèle sans secret config/mail.example.json, lui, peut être publié.
+config/mail.json
+
+# Données produites par le site : journal de connexion, messages de contact
+# (noms, e-mails, adresses IP), limitation anti-brute force, code de réinitialisation
+storage/data/*
+!storage/data/.gitkeep
+
+# Logs de débogage : contenu des e-mails envoyés, dont les codes de réinitialisation
+storage/logs/*
+!storage/logs/.gitkeep
+
+# Fichiers temporaires (copies des sauvegardes JSON exportées)
+storage/tmp/*
+!storage/tmp/.gitkeep
+
+# Identifiants générés par includes/creer-admin.php, s'ils sont écrits dans le projet par erreur
+IDENTIFIANTS*.txt
+
+# Fichiers créés automatiquement par Windows
+Thumbs.db
+desktop.ini

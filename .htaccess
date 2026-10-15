@@ -1,0 +1,34 @@
+# ==========================================================================
+# InfoLeader — réglages Apache pour tout le site (tâche SEC-7)
+# ==========================================================================
+
+# Ne jamais afficher les erreurs PHP aux visiteurs : elles révèlent des chemins
+# du serveur et des détails techniques utiles à un attaquant.
+# Les erreurs restent enregistrées dans le journal de WAMP : C:\wamp64\logs\php_error.log
+# Pour déboguer temporairement : remplacer « Off » par « On » sur la ligne display_errors,
+# puis remettre « Off » une fois le problème corrigé.
+#
+# <IfModule php_module> : ces lignes ne s'appliquent que si PHP fonctionne comme module
+# d'Apache (c'est le cas sous WAMP) ; sinon elles sont ignorées au lieu de provoquer une erreur 500.
+<IfModule php_module>
+    php_flag display_errors Off
+    php_flag display_startup_errors Off
+    php_flag log_errors On
+</IfModule>
+
+# En-têtes de sécurité envoyés avec chaque réponse du site (tâche SEC-8) :
+#   X-Content-Type-Options : le navigateur ne « devine » pas le type d'un fichier (évite d'exécuter un faux script)
+#   X-Frame-Options        : le site ne peut pas être affiché dans une page d'un autre site (anti-clickjacking)
+#   Referrer-Policy        : l'adresse des pages n'est pas transmise aux sites extérieurs
+# Mêmes valeurs que celles envoyées par PHP dans le panel (demarrerSession) : pas de doublon contradictoire.
+<IfModule headers_module>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "DENY"
+    Header set Referrer-Policy "same-origin"
+</IfModule>
+
+# Dossier .git (historique du dépôt GitHub) : jamais servi par Apache.
+# Sans cette règle, n'importe qui pourrait télécharger tout l'historique du projet.
+<IfModule alias_module>
+    RedirectMatch 404 /\.git(/|$)
+</IfModule>
